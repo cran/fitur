@@ -23,55 +23,6 @@ calc_moments <- function(x) {
     kurtosis = kurtosis(x))
 }
 
-#' Fit Univariate Distributions by Specifying Parameters
-#'
-#' @param distribution
-#'
-#' distribution character name
-#'
-#' @param parameters
-#'
-#' named vector of parameters to set
-#'
-#' @return
-#'
-#' list of distribution functions for d, p, q, r, and parameters
-#'
-#' @import stats
-#'
-#' @export
-#'
-#' @examples
-#' manFun <- fit_univariate_man('norm', c(mean = 2, sd = 5))
-#' set.seed(5)
-#' m1 <- mean(manFun$rnorm(100000))
-#' set.seed(5)
-#' m2 <- mean(rnorm(100000, 2, 5))
-#' identical(m1, m2)
-fit_univariate_man <- function(distribution, parameters) {
-
-  type <- paste0(c('d', 'p', 'q', 'r'), distribution)
-  funs <- lapply(type, function(type) {
-    match.fun(type)
-  })
-  names(funs) <- type
-
-  # parameter name checking
-  allParams <- unique(names(unlist(lapply(unname(funs), formals))))
-  specParams <- names(parameters)
-  matchedArgs <- match.arg(specParams, allParams, several.ok = TRUE)
-  if (length(matchedArgs) != length(specParams)) {
-    stop("Specified names of parameters do not match argument names of functions")
-  }
-
-  funs <- lapply(setNames(funs, names(funs)),
-                 gen_dist_fun,
-                 parameters = parameters)
-  funs[['parameters']] <- parameters
-  funs
-
-}
-
 #' Find Mode
 #'
 #' @param x
@@ -85,28 +36,6 @@ fit_univariate_man <- function(distribution, parameters) {
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
-}
-
-#' Generate Single Distribution Function
-#'
-#' @param f
-#'
-#' one of distribution functions
-#'
-#' @param parameters
-#'
-#' new parameters for distribution
-#'
-#' @param ...
-#'
-#' arguments to pass on to distribution function
-#'
-#' @return
-#' one of parameterized distribution functions in d, p, q, r
-
-gen_dist_fun <- function(f, parameters, ...) {
-  function(...)
-    do.call(f, c(list(...), parameters))
 }
 
 #' Q-Q Plot
@@ -129,13 +58,16 @@ gen_dist_fun <- function(f, parameters, ...) {
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
 #' set.seed(37)
 #' x <- rgamma(10000, 5)
 #' dists <- c('gamma', 'lnorm', 'weibull')
 #' fits <- lapply(dists, fit_univariate, x = x)
-#' plot_qq(x, fits)
+#' plot_qq(x, fits) +
+#' theme_bw()
 plot_qq <- function(x, fits) {
   theorQuant <- lapply(fits, function(fit) {
+    # is.distfun(fit)
     # if(pmatch(c('d', 'p', 'q', 'r', 'parameters'), testNames))
     probs <- 1:length(x)/(length(x) + 1)
     data.frame(distribution = names(fit)[3],
@@ -152,6 +84,8 @@ plot_qq <- function(x, fits) {
     geom_abline(slope = 1,
                 color = 'black')
 }
+# with classes implemented just check if distfun -> if so wrap in list
+# if distfuns class continue as usual
 
 #' P-P Plot
 #'
@@ -173,11 +107,13 @@ plot_qq <- function(x, fits) {
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
 #' set.seed(37)
 #' x <- rgamma(10000, 5)
 #' dists <- c('gamma', 'lnorm', 'weibull')
 #' fits <- lapply(dists, fit_univariate, x = x)
-#' plot_pp(x, fits)
+#' plot_pp(x, fits) +
+#' theme_bw()
 plot_pp <- function(x, fits) {
   probs <- 1:length(x)/(length(x) + 1)
   theorPerc <- lapply(fits, function(fit) {
@@ -197,7 +133,7 @@ plot_pp <- function(x, fits) {
     theme(panel.grid = element_blank())
 }
 
-#' Density Comparision Plot
+#' Density Comparison Plot
 #'
 #' @param x
 #'
@@ -220,11 +156,13 @@ plot_pp <- function(x, fits) {
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
 #' set.seed(37)
 #' x <- rgamma(10000, 5)
 #' dists <- c('gamma', 'lnorm', 'weibull')
 #' fits <- lapply(dists, fit_univariate, x = x)
-#' plot_density(x, fits, 30)
+#' plot_density(x, fits, 30) +
+#' theme_bw()
 plot_density <- function(x, fits, nbins) {
 
   df <- data.frame(x = x)
@@ -246,21 +184,70 @@ plot_density <- function(x, fits, nbins) {
     scale_color_discrete(name = "distribution",
                          breaks = ddists)
 }
-# x <- rgamma(100, 5)
-# fit <- fit_univariate(x, distribution = 'gamma')
-# simulate_ks <- function(x, fit, reps) {
-#
-#   samples <- replicate(reps,
-#                        expr = sort(fit[[4]](length(x))),
-#                        simplify = FALSE)
-#   ksTests <- vapply(samples,
-#                     FUN = function(sample) ks.test(x, sample)[['statistic']],
-#                     FUN.VALUE = vector(length(samples), mode = 'numeric'))
-#   Dthreshold <- ks.test(x, fit[[2]])[['statistic']]
-#
-#   ksTests <- sapply(X = samples,
-#                     FUN = function(sample) ks.test(x, sample)[['statistic']])
-#   sum(ksTests >= Dthreshold)/
-#
-#
-# }
+
+#' Wrappers to compute goodness of fit test froms distfun objects
+#'
+#' @param distfun
+#'
+#' a distfun object
+#'
+#' @param x
+#'
+#' numeric vector
+#'
+#' @param ...
+#'
+#' arguments to be passed on to test function
+#'
+#' @return
+#'
+#' goodness of fit object
+#'
+#' @export
+#'
+#' @name GOFTests
+#'
+#' @examples
+#' x <- rgamma(100, 1, 1)
+#' fit <- fit_univariate(x, 'gamma')
+#' ks_test(fit, x)
+#' ad_test(fit, x)
+#' cvm_test(fit, x)
+ks_test <- function(distfun, x, ...) {
+  UseMethod("ks_test")
+}
+
+#' @export
+ks_test.distfun <- function(distfun, x, ...) {
+  ks.test(x, distfun[[2]], ...)
+}
+
+#' @rdname GOFTests
+#'
+#' @importFrom goftest ad.test
+#'
+#' @export
+ad_test.distfun <- function(distfun, x) {
+  ad.test(x, null = distfun[[2]])
+}
+
+#' @rdname GOFTests
+#' @export
+ad_test <- function(distfun, x) {
+  UseMethod("ad_test")
+}
+
+#' @rdname GOFTests
+#'
+#' @importFrom goftest cvm.test
+#'
+#' @export
+cvm_test.distfun <- function(distfun, x) {
+  cvm.test(x, null = distfun[[2]])
+}
+
+#' @rdname GOFTests
+#' @export
+cvm_test <- function(distfun, x) {
+  UseMethod("cvm_test")
+}
