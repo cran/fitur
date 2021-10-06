@@ -1,8 +1,8 @@
-## ----setup, include=FALSE------------------------------------------------
+## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 7)
 library(fitur)
 
-## ----discrete------------------------------------------------------------
+## ----discrete-----------------------------------------------------------------
 set.seed(42)
 x <- rpois(1000, 3)
 fitted <- fit_univariate(x, 'pois', type = 'discrete')
@@ -23,7 +23,7 @@ summary(fitted$rpois(100))
 # estimated parameters from MLE
 fitted$parameters
 
-## ----continuous----------------------------------------------------------
+## ----continuous---------------------------------------------------------------
 set.seed(24)
 x <- rweibull(1000, shape = .5, scale = 2)
 fitted <- fit_univariate(x, 'weibull')
@@ -44,7 +44,7 @@ summary(fitted$rweibull(100))
 # estimated parameters from MLE
 fitted$parameters
 
-## ----empiricalDiscrete---------------------------------------------------
+## ----empiricalDiscrete--------------------------------------------------------
 set.seed(562)
 x <- rpois(100, 5)
 empDis <- fit_empirical(x)
@@ -68,7 +68,7 @@ plot(x = seq(.1, 1, .1),
 summary(empDis$r(100))
 empDis$parameters
 
-## ----empiricalContinous--------------------------------------------------
+## ----empiricalContinous-------------------------------------------------------
 set.seed(562)
 x <- rexp(100, 1/5)
 empCont <- fit_empirical(x)

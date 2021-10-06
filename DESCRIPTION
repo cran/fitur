@@ -1,6 +1,6 @@
 Package: fitur
 Title: Fit Univariate Distributions
-Version: 0.6.1
+Version: 0.6.2
 Authors@R: person("Thomas", "Roh", email = "thomas@roh.engineering", role = c("aut", "cre"))
 Description: Wrapper for computing parameters for univariate distributions using MLE. It creates an object that stores d, p, q, r functions as well as parameters and statistics for diagnostics. Currently supports automated fitting from base and actuar packages. A manually fitting distribution fitting function is included to support directly specifying parameters for any distribution from ancillary packages.
 URL: https://github.com/tomroh/fitur
@@ -11,12 +11,11 @@ Imports: stats, fitdistrplus, actuar, e1071, ggplot2, goftest, shiny
 Suggests: knitr, rmarkdown
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2018-09-01 19:03:28 UTC; troh
+Packaged: 2021-10-06 16:07:23 UTC; troh
 Author: Thomas Roh [aut, cre]
 Maintainer: Thomas Roh <thomas@roh.engineering>
 Repository: CRAN
-Date/Publication: 2018-09-01 19:20:03 UTC
+Date/Publication: 2021-10-06 16:30:02 UTC
